@@ -20,14 +20,14 @@ class Layer(nn.Module):
         self.act_layer = nn.ReLU()
         self.layer = self.layer.to(self.device)
 
-        self.opt = optim.Adam(self.layer.parameters(), lr=self.lr, betas=(0.9, 0.999))
+        self.opt = optim.Adam(self.parameters(), lr=self.lr, betas=(0.9, 0.999))
 
     def train_layer(self, pos_data, neg_data):
 
         pos_data = pos_data.to(self.device)
         neg_data = neg_data.to(self.device)
 
-        for e in range(self.epochs):
+        for e in range(1, self.epochs+1):
             pos_act = self.data_pass(pos_data)
             #pos_loss = -self.calc_loss(pos_act)
             #pos_loss.backward()
@@ -46,8 +46,6 @@ class Layer(nn.Module):
             self.opt.step()
             self.opt.zero_grad()
 
-        print(f"Layer {self.layer._get_name()} trained!\n")
-
         return self.act_layer(self.layer(pos_data)).detach(), self.act_layer(self.layer(neg_data)).detach()
 
     def data_pass(self, data):
@@ -64,7 +62,6 @@ class Layer(nn.Module):
         for e in range(self.epochs):
             _, _ = self.train_layer(pos_data, neg_data)
 
-        print(f"Layer {self.layer._get_name()} trained!\n")
         return self.train_layer(pos_data, neg_data)
 
     def calc_loss(self, data):
@@ -141,12 +138,10 @@ class Model(nn.Module):
 
         over_all = torch.cat(overall_fit_metric, dim=1)
         over_all_sum = torch.sum(over_all, dim=-1, keepdim=True)
+
         over_all /= over_all_sum
-        #print("Overall shape: ", over_all.shape)
-        #print(over_all[0])
+
+        #print(over_all[0].sum().item())
         #over_all = torch.tensor(overall_fit_metric)/sum(overall_fit_metric)
 
         return torch.argmax(over_all, dim=-1)
-
-
-

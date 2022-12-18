@@ -1,3 +1,4 @@
 /MNIST/*
 .idea/*
 scripts/*__/*.pyc
+scripts/newMain.py
