@@ -130,11 +130,8 @@ class Model(nn.Module):
 
             #fit = torch.sum(torch.tensor(fit_metric), keepdim=True)
             #print("Shape is: ",fit_metric[0].shape)
-            sum_ = 0
-            for t in fit_metric:
-                sum_ += t
 
-            overall_fit_metric.append(sum_)
+            overall_fit_metric.append(sum(fit_metric))
 
         over_all = torch.cat(overall_fit_metric, dim=1)
         over_all_sum = torch.sum(over_all, dim=-1, keepdim=True)
