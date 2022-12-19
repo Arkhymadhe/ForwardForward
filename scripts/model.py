@@ -2,15 +2,18 @@ import torch
 from torch import nn, optim
 import matplotlib.pyplot as plt
 
+
 def loss(data, labels):
     return (data - labels).mean()
+
 
 def new_loss(p, n):
     return (p - n).mean()
 
-class Layer(nn.Module):
+
+class NetLayer(nn.Module):
     def __init__(self, base_layer, lr, threshold, epochs, device, **kwargs):
-        super(Layer, self).__init__()
+        super(NetLayer, self).__init__()
         self.layer = base_layer(**kwargs)
 
         self.device = device
@@ -20,7 +23,7 @@ class Layer(nn.Module):
         self.act_layer = nn.ReLU()
         self.layer = self.layer.to(self.device)
 
-        self.opt = optim.Adam(self.parameters(), lr=self.lr, betas=(0.9, 0.999))
+        self.opt = optim.Adam(self.layer.parameters(), lr=self.lr, betas=(0.9, 0.999))
 
     def train_layer(self, pos_data, neg_data):
 
@@ -28,11 +31,11 @@ class Layer(nn.Module):
         neg_data = neg_data.to(self.device)
 
         for e in range(1, self.epochs+1):
-            pos_act = self.data_pass(pos_data)
+            pos_act = self.act_layer(self.layer(pos_data)).pow(2).mean(1)
             #pos_loss = -self.calc_loss(pos_act)
             #pos_loss.backward()
 
-            neg_act = self.data_pass(neg_data)
+            neg_act = self.act_layer(self.layer(neg_data)).pow(2).mean(1)
             #neg_loss = self.calc_loss(neg_act)
             #neg_loss.backward()
 
@@ -89,7 +92,7 @@ class Model(nn.Module):
         for i in range(self.num_layers):
             self.layers.add_module(
                 name = f'layer_{i}',
-                module = Layer(
+                module = NetLayer(
                     kwargs[f'{i}']['base_layer'],
                     self.lr,
                     self.threshold,
