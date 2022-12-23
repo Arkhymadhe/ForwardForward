@@ -2,6 +2,8 @@ import torch
 from torch import nn, optim
 import matplotlib.pyplot as plt
 
+from itertools import chain
+
 
 def loss(data, labels):
     return (data - labels).mean()
@@ -21,21 +23,32 @@ class NetLayer(nn.Module):
         self.lr = lr
         self.threshold = threshold
         self.act_layer = nn.ReLU()
+
+        self.layer = nn.Sequential(
+            self.layer,
+            self.act_layer
+        )
         self.layer = self.layer.to(self.device)
 
-        self.opt = optim.Adam(self.layer.parameters(), lr=self.lr, betas=(0.9, 0.999))
+        self.opt = optim.Adam(
+            self.layer.parameters(),
+            lr=self.lr, betas=(0.9, 0.999)
+        )
 
     def train_layer(self, pos_data, neg_data):
 
         pos_data = pos_data.to(self.device)
         neg_data = neg_data.to(self.device)
 
+        if self.layer[0].__class__.__name__ == 'Linear':
+            pos_data, neg_data = pos_data.view(pos_data.shape[0], -1), neg_data.view(neg_data.shape[0], -1)
+
         for e in range(1, self.epochs+1):
-            pos_act = self.act_layer(self.layer(pos_data)).pow(2).mean(1)
+            pos_act = self.forward(pos_data).pow(2).mean(1)
             #pos_loss = -self.calc_loss(pos_act)
             #pos_loss.backward()
 
-            neg_act = self.act_layer(self.layer(neg_data)).pow(2).mean(1)
+            neg_act = self.forward(neg_data).pow(2).mean(1)
             #neg_loss = self.calc_loss(neg_act)
             #neg_loss.backward()
 
@@ -49,10 +62,10 @@ class NetLayer(nn.Module):
             self.opt.step()
             self.opt.zero_grad()
 
-        return self.act_layer(self.layer(pos_data)).detach(), self.act_layer(self.layer(neg_data)).detach()
+        return self.forward(pos_data).detach(), self.forward(neg_data).detach()
 
     def data_pass(self, data):
-        act = self.act_layer(self.layer(data.to(self.device)))
+        act = self.layer(data.to(self.device))
         return act.pow(2).mean(1)
 
     def train(self, pos_data, neg_data):
@@ -73,7 +86,10 @@ class NetLayer(nn.Module):
         return loss(data, labels)
 
     def forward(self, x):
-        return self.act_layer(self.layer(x.to(self.device)))
+        x = x / (x.norm(2, 1, keepdim=True) + 1e-4)
+        if self.layer[0].__class__.__name__ == 'Linear':
+            x = x.view(x.shape[0], -1)
+        return self.layer(x.to(self.device))
 
 
 class Model(nn.Module):
@@ -110,9 +126,6 @@ class Model(nn.Module):
         neg_data = neg_data.to(self.device)
 
         for layer in self.layers:
-            if layer.layer.__class__.__name__ == 'Linear':
-                pos_data, neg_data = pos_data.view(pos_data.shape[0], -1), neg_data.view(neg_data.shape[0], -1)
-
             pos_data, neg_data = layer.train_layer(pos_data, neg_data)
 
         return
@@ -126,8 +139,6 @@ class Model(nn.Module):
             pred = data.to(self.device)
 
             for layer in self.layers:
-                if layer.layer.__class__.__name__ == 'Linear':
-                    pred = pred.view(pred.shape[0], -1)
                 pred = layer(pred)
                 fit_metric.append(pred.view(pred.shape[0], -1).pow(2).mean(1).unsqueeze(1))
 

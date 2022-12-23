@@ -12,27 +12,30 @@ from matplotlib import pyplot as plt
 from model import NetLayer, Model
 from utils import collate_fn
 
-def main():
-    batch_size = 128
 
+def main():
+    batch_size = 32
+
+    print("Get train data...\n")
     train_dataset = MNIST(
         root=os.getcwd().replace('scripts', ''),
-        train=True, download=False,
+        train=True, download=True,
         transform=T.Compose(
             [T.ToTensor(), T.Normalize((0.5,), (0.5,))]
         )
     )
 
+    print("Get test data...\n")
     test_dataset = MNIST(
         root=os.getcwd().replace('scripts', ''),
-        train=True, download=False,
+        train=False, download=True,
         transform=T.Compose(
             [T.ToTensor(), T.Normalize((0.5,), (0.5,))]
         )
     )
 
-    train_dl = DataLoader(train_dataset, 50000, shuffle=True)
-    test_dl = DataLoader(test_dataset, 10000, shuffle=True)
+    train_dl = DataLoader(train_dataset, batch_size, shuffle=True)
+    test_dl = DataLoader(test_dataset, batch_size, shuffle=True)
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -48,7 +51,7 @@ def main():
             'base_layer': nn.Conv2d,
             'kwargs': {
                 'in_channels': 1,
-                'out_channels': 16,
+                'out_channels': 5,
                 'kernel_size': 3,
                 'bias': False
             }
@@ -56,7 +59,7 @@ def main():
         '1': {
             'base_layer': nn.Conv2d,
             'kwargs': {
-                'in_channels': 16,
+                'in_channels': 5,
                 'out_channels': 8,
                 'kernel_size': 3,
                 'bias': False
@@ -107,11 +110,16 @@ def main():
         model.train_model(pos_data, neg_data)
 
         pred_labels = model(batch[0])
-        accs.append(100 * sum(pred_labels == batch[1].to(model.device)) / pred_labels.shape[0])
+        accs.append(100 * pred_labels.eq(batch[1].to(device)).float().mean())
 
-        #if (i+1) % 32 == 0 or i == len(train_dl) - 1:
-        print(f"Accuracy (%): {sum(accs) / len(accs) : .4f}\n")
-        accs.clear()
+    print(f"Train Accuracy (%): {sum(accs) / len(accs) : .4f}\n")
+    accs.clear()
+
+    for i, batch in enumerate(test_dl):
+        pred_labels = model(batch[0])
+        accs.append(100 * pred_labels.eq(batch[1].to(device)).float().mean())
+
+    print(f"Test Accuracy (%): {sum(accs) / len(accs) : .4f}\n")
 
 
 if __name__ == '__main__':
