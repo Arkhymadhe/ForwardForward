@@ -43,16 +43,16 @@ class NetLayer(nn.Module):
         if self.layer[0].__class__.__name__ == 'Linear':
             pos_data, neg_data = pos_data.view(pos_data.shape[0], -1), neg_data.view(neg_data.shape[0], -1)
 
-        for e in range(1, self.epochs+1):
+        for e in range(1, self.epochs + 1):
             pos_act = self.forward(pos_data).pow(2).mean(1)
-            #pos_loss = -self.calc_loss(pos_act)
-            #pos_loss.backward()
+            # pos_loss = -self.calc_loss(pos_act)
+            # pos_loss.backward()
 
             neg_act = self.forward(neg_data).pow(2).mean(1)
-            #neg_loss = self.calc_loss(neg_act)
-            #neg_loss.backward()
+            # neg_loss = self.calc_loss(neg_act)
+            # neg_loss.backward()
 
-            #loss = -new_loss(pos_act, neg_act)
+            # loss = -new_loss(pos_act, neg_act)
             loss = torch.log(1 + torch.exp(torch.cat([
                 -pos_act + self.threshold,
                 neg_act - self.threshold]))).mean()
@@ -93,7 +93,7 @@ class NetLayer(nn.Module):
 
 
 class Model(nn.Module):
-    def __init__(self, lr, threshold, epochs, device, num_classes = 2, **kwargs):
+    def __init__(self, lr, threshold, epochs, device, num_classes=2, **kwargs):
         super(Model, self).__init__()
 
         self.num_classes = num_classes
@@ -107,8 +107,8 @@ class Model(nn.Module):
 
         for i in range(self.num_layers):
             self.layers.add_module(
-                name = f'layer_{i}',
-                module = NetLayer(
+                name=f'layer_{i}',
+                module=NetLayer(
                     kwargs[f'{i}']['base_layer'],
                     self.lr,
                     self.threshold,
@@ -142,20 +142,17 @@ class Model(nn.Module):
                 pred = layer(pred)
                 fit_metric.append(pred.view(pred.shape[0], -1).pow(2).mean(1).unsqueeze(1))
 
-            #fit = torch.sum(torch.tensor(fit_metric), keepdim=True)
-            #print("Shape is: ",fit_metric[0].shape)
-            sum_ = 0
-            for t in fit_metric:
-                sum_ += t
+            # fit = torch.sum(torch.tensor(fit_metric), keepdim=True)
+            # print("Shape is: ",fit_metric[0].shape)
 
-            overall_fit_metric.append(sum_)
+            overall_fit_metric.append(sum(fit_metric))
 
         over_all = torch.cat(overall_fit_metric, dim=1)
         over_all_sum = torch.sum(over_all, dim=-1, keepdim=True)
 
         over_all /= over_all_sum
 
-        #print(over_all[0].sum().item())
-        #over_all = torch.tensor(overall_fit_metric)/sum(overall_fit_metric)
+        # print(over_all[0].sum().item())
+        # over_all = torch.tensor(overall_fit_metric)/sum(overall_fit_metric)
 
         return torch.argmax(over_all, dim=-1)

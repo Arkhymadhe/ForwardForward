@@ -14,7 +14,7 @@ from utils import collate_fn
 
 
 def main():
-    batch_size = 32
+    batch_size = 128
 
     print("Get train data...\n")
     train_dataset = MNIST(
@@ -35,9 +35,11 @@ def main():
     )
 
     train_dl = DataLoader(train_dataset, batch_size, shuffle=True)
-    test_dl = DataLoader(test_dataset, batch_size, shuffle=True)
+    test_dl = DataLoader(test_dataset, batch_size, shuffle=False)
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
+
+    device = torch.device(device)
 
     args = {
         'in_channels': 1,
@@ -88,8 +90,12 @@ def main():
         }
     }
 
-    model = Model(1e-3, 2, **kwargs, device = device, num_classes=10, epochs=1000)
-    layer = NetLayer(nn.Conv2d, 1e-4, 2, 10, **args, device=device)
+    num_classes = 10
+    epochs = 1000
+    lr = 1e-3
+
+    model = Model(lr, 2, **kwargs, device=device, num_classes=num_classes, epochs=epochs)
+    layer = NetLayer(nn.Conv2d, lr/10, 2, 10, **args, device=device)
 
     pos_data = torch.randn((32, 1, 28, 28), dtype=torch.float32)
     neg_data = torch.randn((32, 1, 28, 28), dtype=torch.float32)
@@ -103,9 +109,12 @@ def main():
     n_classes = 10
 
     accs = list()
+
+    print(f"Training with {len(train_dl)} batches")
     for i, batch in enumerate(train_dl):
         pos_data = collate_fn(batch, n_classes, False)
         neg_data = collate_fn(batch, n_classes, True)
+        print(f"Train batch {i}")
 
         model.train_model(pos_data, neg_data)
 
@@ -115,7 +124,9 @@ def main():
     print(f"Train Accuracy (%): {sum(accs) / len(accs) : .4f}\n")
     accs.clear()
 
+    print(f"\n\nTesting with {len(test_dl)} batches")
     for i, batch in enumerate(test_dl):
+        print(f"Test batch {i}")
         pred_labels = model(batch[0])
         accs.append(100 * pred_labels.eq(batch[1].to(device)).float().mean())
 
