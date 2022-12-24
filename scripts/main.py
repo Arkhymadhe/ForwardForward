@@ -93,63 +93,55 @@ def main():
     }
 
     num_classes = 10
-    epochs = 1000
+    epochs = 10
     lr = 1e-3
 
-    model = Model(lr, 2, **kwargs, device=device, num_classes=num_classes, epochs=epochs)
-    layer = NetLayer(nn.Conv2d, lr/10, 2, 10, **args, device=device)
-
-    pos_data = torch.randn((32, 1, 28, 28), dtype=torch.float32)
-    neg_data = torch.randn((32, 1, 28, 28), dtype=torch.float32)
-
-    a, b = layer.train_layer(pos_data, neg_data)
-
-    # print(a.shape)
-    # print("Argmax: ", model.infer(neg_data))
-    print("All is well\n")
+    model = Model(lr=lr, threshold=2, **kwargs, device=device, num_classes=num_classes, epochs=epochs)
 
     n_classes = 10
 
     accs = list()
 
-    print(f"Training with {len(train_dl)} batches")
-    for i, batch in enumerate(train_dl):
+    print(f"Training with {len(train_dl)} batches...")
+    for i, batch in enumerate(train_dl, start=1):
         pos_data = collate_fn(batch, n_classes, False)
         neg_data = collate_fn(batch, n_classes, True)
 
-        if (i == 0) or (i+1 % 50 == 0) or (i+1 % 100 == 0):
-            print(f"Train batch {i}")
+        if (i == 1) or (i % 50 == 0):
+            print(f"  Training with batch {i}...")
 
         model.train_model(pos_data, neg_data)
 
         pred_labels = model(batch[0])
         accs.append(100 * pred_labels.eq(batch[1].to(device)).float().mean())
 
-    print(f"Train Accuracy (%): {sum(accs) / len(accs) : .4f}\n")
+    print(f"\nTrain Accuracy (%): {sum(accs) / len(accs) : .4f}\n")
     accs.clear()
 
-    print(f"\n\nTesting with {len(test_dl)} batches")
-    for i, batch in enumerate(test_dl):
-        if (i == 0) or (i+1 % 50 == 0) or (i+1 % 100 == 0):
-            print(f"Test batch {i}")
+    print(f"\n\nTesting with {len(test_dl)} batches...")
+    for i, batch in enumerate(test_dl, start=1):
+        if (i == 1) or (i % 10 == 0):
+            print(f"  Testing with batch {i}...")
 
         pred_labels = model(batch[0])
         accs.append(100 * pred_labels.eq(batch[1].to(device)).float().mean())
 
-    print(f"Test Accuracy (%): {sum(accs) / len(accs) : .4f}\n")
+    print(f"\nTest Accuracy (%): {sum(accs) / len(accs) : .4f}\n")
+
+    model_name = 'model.ckpt'
 
     torch.save(
         {
             'model_state_dict': model.state_dict()
         },
-        'model.ckpt'
+        model_name
     )
 
     shutil.move(
-        'model.ckpt',
+        os.path.join(os.getcwd(), model_name),
         os.path.join(
             os.getcwd().replace('scripts', 'artefacts'),
-            'model.ckpt'
+            model_name
         )
     )
 
