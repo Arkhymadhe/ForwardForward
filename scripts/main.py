@@ -1,3 +1,5 @@
+import shutil
+
 import torch
 from torch import nn
 
@@ -14,7 +16,7 @@ from utils import collate_fn
 
 
 def main():
-    batch_size = 128
+    batch_size = 128*2
 
     print("Get train data...\n")
     train_dataset = MNIST(
@@ -114,7 +116,9 @@ def main():
     for i, batch in enumerate(train_dl):
         pos_data = collate_fn(batch, n_classes, False)
         neg_data = collate_fn(batch, n_classes, True)
-        print(f"Train batch {i}")
+
+        if (i == 0) or (i+1 % 50 == 0) or (i+1 % 100 == 0):
+            print(f"Train batch {i}")
 
         model.train_model(pos_data, neg_data)
 
@@ -126,11 +130,28 @@ def main():
 
     print(f"\n\nTesting with {len(test_dl)} batches")
     for i, batch in enumerate(test_dl):
-        print(f"Test batch {i}")
+        if (i == 0) or (i+1 % 50 == 0) or (i+1 % 100 == 0):
+            print(f"Test batch {i}")
+
         pred_labels = model(batch[0])
         accs.append(100 * pred_labels.eq(batch[1].to(device)).float().mean())
 
     print(f"Test Accuracy (%): {sum(accs) / len(accs) : .4f}\n")
+
+    torch.save(
+        {
+            'model_state_dict': model.state_dict()
+        },
+        'model.ckpt'
+    )
+
+    shutil.move(
+        'model.ckpt',
+        os.path.join(
+            os.getcwd().replace('scripts', 'artefacts'),
+            'model.ckpt'
+        )
+    )
 
 
 if __name__ == '__main__':

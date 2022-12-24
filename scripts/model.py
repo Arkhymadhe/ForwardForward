@@ -22,7 +22,7 @@ class NetLayer(nn.Module):
         self.epochs = epochs
         self.lr = lr
         self.threshold = threshold
-        self.act_layer = nn.ReLU()
+        self.act_layer = nn.LeakyReLU(negative_slope=.2, inplace=True)
 
         self.layer = nn.Sequential(
             self.layer,
@@ -37,18 +37,20 @@ class NetLayer(nn.Module):
 
     def train_layer(self, pos_data, neg_data):
 
-        pos_data = pos_data.to(self.device)
-        neg_data = neg_data.to(self.device)
+        h_pos = pos_data.to(self.device)
+        h_neg = neg_data.to(self.device)
 
         if self.layer[0].__class__.__name__ == 'Linear':
-            pos_data, neg_data = pos_data.view(pos_data.shape[0], -1), neg_data.view(neg_data.shape[0], -1)
+            h_pos, h_neg = pos_data.view(h_pos.shape[0], -1), h_neg.view(neg_data.shape[0], -1)
 
         for e in range(1, self.epochs + 1):
-            pos_act = self.forward(pos_data).pow(2).mean(1)
+            self.opt.zero_grad()
+
+            pos_act = self.forward(h_pos).pow(2).mean(1)
             # pos_loss = -self.calc_loss(pos_act)
             # pos_loss.backward()
 
-            neg_act = self.forward(neg_data).pow(2).mean(1)
+            neg_act = self.forward(h_neg).pow(2).mean(1)
             # neg_loss = self.calc_loss(neg_act)
             # neg_loss.backward()
 
@@ -60,9 +62,8 @@ class NetLayer(nn.Module):
             loss.backward()
 
             self.opt.step()
-            self.opt.zero_grad()
 
-        return self.forward(pos_data).detach(), self.forward(neg_data).detach()
+        return self.forward(h_pos).detach(), self.forward(h_neg).detach()
 
     def data_pass(self, data):
         act = self.layer(data.to(self.device))
@@ -70,15 +71,15 @@ class NetLayer(nn.Module):
 
     def train(self, pos_data, neg_data):
         print("Generate positive data...\n")
-        pos_data = pos_data.to(self.device)
+        h_pos = pos_data.to(self.device)
 
         print("Generate negative data...\n")
-        neg_data = neg_data.to(self.device)
+        h_neg = neg_data.to(self.device)
 
         for e in range(self.epochs):
-            _, _ = self.train_layer(pos_data, neg_data)
+            _, _ = self.train_layer(h_pos, h_neg)
 
-        return self.train_layer(pos_data, neg_data)
+        return self.train_layer(h_pos, h_neg)
 
     def calc_loss(self, data):
         labels = data.clone()
@@ -93,7 +94,7 @@ class NetLayer(nn.Module):
 
 
 class Model(nn.Module):
-    def __init__(self, lr, threshold, epochs, device, num_classes=2, **kwargs):
+    def __init__(self, lr=1e-6, threshold=1., epochs=10, device='cuda', num_classes=2, **kwargs):
         super(Model, self).__init__()
 
         self.num_classes = num_classes
@@ -103,7 +104,7 @@ class Model(nn.Module):
         self.threshold = threshold
         self.num_layers = len(kwargs)
 
-        self.layers = nn.Sequential()
+        self.layers = nn.Sequential().to(self.device)
 
         for i in range(self.num_layers):
             self.layers.add_module(
@@ -118,15 +119,15 @@ class Model(nn.Module):
                 )
             )
 
-        self.layers = self.layers.to(self.device)
+        #self.layers = self.layers.to(self.device)
 
     def train_model(self, pos_data, neg_data):
 
-        pos_data = pos_data.to(self.device)
-        neg_data = neg_data.to(self.device)
+        h_pos = pos_data.to(self.device)
+        h_neg = neg_data.to(self.device)
 
         for layer in self.layers:
-            pos_data, neg_data = layer.train_layer(pos_data, neg_data)
+            h_pos, h_neg = layer.train_layer(h_pos, h_neg)
 
         return
 
@@ -141,9 +142,6 @@ class Model(nn.Module):
             for layer in self.layers:
                 pred = layer(pred)
                 fit_metric.append(pred.view(pred.shape[0], -1).pow(2).mean(1).unsqueeze(1))
-
-            # fit = torch.sum(torch.tensor(fit_metric), keepdim=True)
-            # print("Shape is: ",fit_metric[0].shape)
 
             overall_fit_metric.append(sum(fit_metric))
 

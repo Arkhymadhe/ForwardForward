@@ -1,7 +1,7 @@
 ---
 ## Foward-Forward Algorithm
 
-This algorithm is designed by Geoffrey Hinton and presented at NEURIPS 2022 as a possible alternative to the all-popular backpropagation algorithm that powers most of present-day ML.
+This algorithm is designed by Geoffrey Hinton and presented at NeurIPS 2022 as a possible alternative to the all-popular backpropagation algorithm that powers most of present-day ML.
 
 Note that the difference between this algorithm and regular backprop is not the prescence of gradients or lack thereof; it is the scale and purpose at which and for which the gradients are calculated.
 
