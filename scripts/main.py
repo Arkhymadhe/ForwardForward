@@ -1,4 +1,5 @@
 import shutil
+import os
 
 import torch
 from torch import nn
@@ -7,18 +8,16 @@ from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
 from torchvision import transforms as T
 
-import os
-
 from matplotlib import pyplot as plt
 
-from model import NetLayer, Model
+from model import Model
 from utils import collate_fn
 
 
 def main():
     batch_size = 128*2
 
-    print("Get train data...\n")
+    print("Get train data...")
     train_dataset = MNIST(
         root=os.getcwd().replace('scripts', ''),
         train=True, download=True,
@@ -43,13 +42,6 @@ def main():
 
     device = torch.device(device)
 
-    args = {
-        'in_channels': 1,
-        'out_channels': 8,
-        'kernel_size': 3,
-        'bias': False
-    }
-
     kwargs = {
         '0': {
             'base_layer': nn.Conv2d,
@@ -57,7 +49,7 @@ def main():
                 'in_channels': 1,
                 'out_channels': 5,
                 'kernel_size': 3,
-                'bias': False
+                'bias': True
             }
         },
         '1': {
@@ -66,7 +58,7 @@ def main():
                 'in_channels': 5,
                 'out_channels': 8,
                 'kernel_size': 3,
-                'bias': False
+                'bias': True
             }
         },
         '2': {
@@ -92,38 +84,79 @@ def main():
         }
     }
 
+    new_kwargs = {
+        '0': {
+            'base_layer': nn.Linear,
+            'kwargs': {
+                'in_features': 28*28,
+                'out_features': 8 * 24 * 24,
+            }
+        },
+        '1': {
+            'base_layer': nn.Linear,
+            'kwargs': {
+                'in_features': 8 * 24 * 24,
+                'out_features': 300,
+            }
+        },
+        '2': {
+            'base_layer': nn.Linear,
+            'kwargs': {
+                'in_features': 300,
+                'out_features': 100,
+            }
+        },
+        '3': {
+            'base_layer': nn.Linear,
+            'kwargs': {
+                'in_features': 100,
+                'out_features': 20,
+            }
+        }
+    }
+
     num_classes = 10
-    epochs = 10
-    lr = 1e-3
+    epochs = 100
+    lr = .03
 
-    model = Model(lr=lr, threshold=2, **kwargs, device=device, num_classes=num_classes, epochs=epochs)
-
-    n_classes = 10
+    model = Model(
+        lr=lr, threshold=2,
+        **new_kwargs,
+        device=device,
+        num_classes=num_classes,
+        epochs=epochs
+    )
 
     accs = list()
 
     print(f"Training with {len(train_dl)} batches...")
     for i, batch in enumerate(train_dl, start=1):
-        pos_data = collate_fn(batch, n_classes, False)
-        neg_data = collate_fn(batch, n_classes, True)
+        pos_data = collate_fn(batch, num_classes, False).to(device)
+        neg_data = collate_fn(batch, num_classes, True).to(device)
 
         if (i == 1) or (i % 50 == 0):
             print(f"  Training with batch {i}...")
 
         model.train_model(pos_data, neg_data)
 
-        pred_labels = model(batch[0])
+        pred_labels = model(batch[0].to(device))
+
         accs.append(100 * pred_labels.eq(batch[1].to(device)).float().mean())
+
+        #print("Pred | Actual")
+        #for (a, b) in zip(pred_labels, batch[1].to(device)):
+        #   print(f"{a} | {b}")
 
     print(f"\nTrain Accuracy (%): {sum(accs) / len(accs) : .4f}\n")
     accs.clear()
 
-    print(f"\n\nTesting with {len(test_dl)} batches...")
+    print(f"\nTesting with {len(test_dl)} batches...")
     for i, batch in enumerate(test_dl, start=1):
         if (i == 1) or (i % 10 == 0):
             print(f"  Testing with batch {i}...")
 
-        pred_labels = model(batch[0])
+        pred_labels = model(batch[0].to(device))
+
         accs.append(100 * pred_labels.eq(batch[1].to(device)).float().mean())
 
     print(f"\nTest Accuracy (%): {sum(accs) / len(accs) : .4f}\n")

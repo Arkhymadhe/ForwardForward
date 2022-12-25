@@ -3,6 +3,7 @@ from torch import nn, optim
 import matplotlib.pyplot as plt
 
 from itertools import chain
+from utils import embed_data
 
 
 def loss(data, labels):
@@ -16,32 +17,32 @@ def new_loss(p, n):
 class NetLayer(nn.Module):
     def __init__(self, base_layer, lr, threshold, epochs, device, **kwargs):
         super(NetLayer, self).__init__()
-        self.layer = base_layer(**kwargs)
+        #self.layer = base_layer(**kwargs)
 
         self.device = device
         self.epochs = epochs
         self.lr = lr
         self.threshold = threshold
-        self.act_layer = nn.LeakyReLU(negative_slope=.2, inplace=True)
+        #self.act_layer = nn.LeakyReLU(negative_slope=.2, inplace=True)
 
         self.layer = nn.Sequential(
-            self.layer,
-            self.act_layer
+            base_layer(**kwargs),
+            nn.LeakyReLU(negative_slope=.2, inplace=True)
         )
         self.layer = self.layer.to(self.device)
 
         self.opt = optim.Adam(
             self.layer.parameters(),
-            lr=self.lr, betas=(0.9, 0.999)
+            lr=self.lr, betas=(0.9, 0.99)
         )
 
     def train_layer(self, pos_data, neg_data):
 
-        h_pos = pos_data.to(self.device)
-        h_neg = neg_data.to(self.device)
+        h_pos = pos_data
+        h_neg = neg_data
 
         if self.layer[0].__class__.__name__ == 'Linear':
-            h_pos, h_neg = pos_data.view(h_pos.shape[0], -1), h_neg.view(neg_data.shape[0], -1)
+            h_pos, h_neg = h_pos.view(h_pos.shape[0], -1), h_neg.view(h_neg.shape[0], -1)
 
         for e in range(1, self.epochs + 1):
             self.opt.zero_grad()
@@ -63,18 +64,20 @@ class NetLayer(nn.Module):
 
             self.opt.step()
 
+            self.opt.zero_grad()
+
         return self.forward(h_pos).detach(), self.forward(h_neg).detach()
 
     def data_pass(self, data):
-        act = self.layer(data.to(self.device))
+        act = self.layer(data)
         return act.pow(2).mean(1)
 
     def train(self, pos_data, neg_data):
         print("Generate positive data...\n")
-        h_pos = pos_data.to(self.device)
+        h_pos = pos_data
 
         print("Generate negative data...\n")
-        h_neg = neg_data.to(self.device)
+        h_neg = neg_data
 
         for e in range(self.epochs):
             _, _ = self.train_layer(h_pos, h_neg)
@@ -90,7 +93,7 @@ class NetLayer(nn.Module):
         x = x / (x.norm(2, 1, keepdim=True) + 1e-4)
         if self.layer[0].__class__.__name__ == 'Linear':
             x = x.view(x.shape[0], -1)
-        return self.layer(x.to(self.device))
+        return self.layer(x)
 
 
 class Model(nn.Module):
@@ -123,8 +126,8 @@ class Model(nn.Module):
 
     def train_model(self, pos_data, neg_data):
 
-        h_pos = pos_data.to(self.device)
-        h_neg = neg_data.to(self.device)
+        h_pos = pos_data
+        h_neg = neg_data
 
         for layer in self.layers:
             h_pos, h_neg = layer.train_layer(h_pos, h_neg)
@@ -137,20 +140,19 @@ class Model(nn.Module):
 
         for class_ in range(self.num_classes):
             fit_metric.clear()
-            pred = data.to(self.device)
+            pred = embed_data(data, class_, self.num_classes, False)
 
             for layer in self.layers:
                 pred = layer(pred)
-                fit_metric.append(pred.view(pred.shape[0], -1).pow(2).mean(1).unsqueeze(1))
+                fit_metric.append(pred.view(pred.shape[0], -1).pow(2).mean(1))
 
-            overall_fit_metric.append(sum(fit_metric))
+            overall_fit_metric.append(sum(fit_metric).unsqueeze(1))
 
         over_all = torch.cat(overall_fit_metric, dim=1)
         over_all_sum = torch.sum(over_all, dim=-1, keepdim=True)
 
         over_all /= over_all_sum
 
-        # print(over_all[0].sum().item())
-        # over_all = torch.tensor(overall_fit_metric)/sum(overall_fit_metric)
+        #print(over_all)
 
         return torch.argmax(over_all, dim=-1)
