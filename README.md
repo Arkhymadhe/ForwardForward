@@ -23,11 +23,43 @@ The following steps are to be followed to run this repo:
 ## Results
 
 ---
+<table style="text-align:center">
+<tr>
+   <th> Type </th>
+   <th> Train Performance (%) </th>
+   <th> Test Performance (%) </th>
+</tr>
+
+<tr>
+   <td> Linear </td>
+   <td> 86 - 85</td>
+   <td> 86 - 85</td>
+</tr>
+
+<tr>
+   <td> Conv </td>
+   <td> 10 - 11</td>
+   <td> 9 - 11</td>
+</tr>
+</table>
+
+---
 ## To-Dos
 
 ---
 There are still a few additions to make to the project. They include:
 1. Improve documentation.
-2. Network does not train.
-   1. Possible issue with Layer optimizer.
+2. Network does not train well for CNNs.
+---
+## Observations
+
+---
+During the implementation of this research idea, a few observations were made:
+1. Vanishing and exploding gradients were a BIG issue. As such, data scaling was found to be a MUST.
+2. The loss implemented may not necessarily be the best, especially as verified by MNIST performance.
+   1. Regular training with backprop yield ~90% performance within 10 epochs of training.
+   2. This implementation yields ~86% within 10 epochs for each layer.
+3. 
+---
+
 

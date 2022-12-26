@@ -2,9 +2,9 @@ import torch
 
 
 def collate_fn(batch, n_classes, corrupt=False):
-    imgs, label = batch
+    img_, label = batch
 
-    img = imgs.clone()
+    img = img_.clone()
 
     labels = torch.zeros(len(label), n_classes)
 

@@ -12,6 +12,7 @@ from matplotlib import pyplot as plt
 
 from model import Model
 from utils import collate_fn
+from config import get_network_config
 
 
 def main():
@@ -42,86 +43,15 @@ def main():
 
     device = torch.device(device)
 
-    kwargs = {
-        '0': {
-            'base_layer': nn.Conv2d,
-            'kwargs': {
-                'in_channels': 1,
-                'out_channels': 5,
-                'kernel_size': 3,
-                'bias': True
-            }
-        },
-        '1': {
-            'base_layer': nn.Conv2d,
-            'kwargs': {
-                'in_channels': 5,
-                'out_channels': 8,
-                'kernel_size': 3,
-                'bias': True
-            }
-        },
-        '2': {
-            'base_layer': nn.Linear,
-            'kwargs': {
-                'in_features': 8 * 24 * 24,
-                'out_features': 300,
-            }
-        },
-        '3': {
-            'base_layer': nn.Linear,
-            'kwargs': {
-                'in_features': 300,
-                'out_features': 100,
-            }
-        },
-        '4': {
-            'base_layer': nn.Linear,
-            'kwargs': {
-                'in_features': 100,
-                'out_features': 20,
-            }
-        }
-    }
-
-    new_kwargs = {
-        '0': {
-            'base_layer': nn.Linear,
-            'kwargs': {
-                'in_features': 28*28,
-                'out_features': 8 * 24 * 24,
-            }
-        },
-        '1': {
-            'base_layer': nn.Linear,
-            'kwargs': {
-                'in_features': 8 * 24 * 24,
-                'out_features': 300,
-            }
-        },
-        '2': {
-            'base_layer': nn.Linear,
-            'kwargs': {
-                'in_features': 300,
-                'out_features': 100,
-            }
-        },
-        '3': {
-            'base_layer': nn.Linear,
-            'kwargs': {
-                'in_features': 100,
-                'out_features': 20,
-            }
-        }
-    }
+    kwargs = get_network_config('conv')
 
     num_classes = 10
-    epochs = 100
-    lr = .03
+    epochs = 10
+    lr = 3e-6
 
     model = Model(
         lr=lr, threshold=2,
-        **new_kwargs,
+        **kwargs,
         device=device,
         num_classes=num_classes,
         epochs=epochs
@@ -129,6 +59,7 @@ def main():
 
     accs = list()
 
+    # Train network
     print(f"Training with {len(train_dl)} batches...")
     for i, batch in enumerate(train_dl, start=1):
         pos_data = collate_fn(batch, num_classes, False).to(device)
@@ -139,17 +70,25 @@ def main():
 
         model.train_model(pos_data, neg_data)
 
+    # Freeze network weights
+    for layer in model.layers:
+        layer.requires_grad_(False)
+
+    # Training performance
+    for i, batch in enumerate(train_dl, start=1):
+
         pred_labels = model(batch[0].to(device))
 
         accs.append(100 * pred_labels.eq(batch[1].to(device)).float().mean())
 
-        #print("Pred | Actual")
-        #for (a, b) in zip(pred_labels, batch[1].to(device)):
-        #   print(f"{a} | {b}")
+        print("Pred | Actual")
+        for (a, b) in zip(pred_labels, batch[1].to(device)):
+            print(f"{a} | {b}")
 
     print(f"\nTrain Accuracy (%): {sum(accs) / len(accs) : .4f}\n")
     accs.clear()
 
+    # Test performance
     print(f"\nTesting with {len(test_dl)} batches...")
     for i, batch in enumerate(test_dl, start=1):
         if (i == 1) or (i % 10 == 0):

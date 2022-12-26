@@ -27,7 +27,7 @@ class NetLayer(nn.Module):
 
         self.layer = nn.Sequential(
             base_layer(**kwargs),
-            nn.LeakyReLU(negative_slope=.2, inplace=True)
+            nn.LeakyReLU(negative_slope=.2, inplace=False)
         )
         self.layer = self.layer.to(self.device)
 
@@ -141,6 +141,7 @@ class Model(nn.Module):
         for class_ in range(self.num_classes):
             fit_metric.clear()
             pred = embed_data(data, class_, self.num_classes, False)
+            #pred = data
 
             for layer in self.layers:
                 pred = layer(pred)
@@ -153,6 +154,6 @@ class Model(nn.Module):
 
         over_all /= over_all_sum
 
-        #print(over_all)
+        print(over_all)
 
         return torch.argmax(over_all, dim=-1)
