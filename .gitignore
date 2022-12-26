@@ -2,3 +2,4 @@
 .idea/*
 scripts/*__/*.pyc
 scripts/newMain.py
+scripts/reg.py

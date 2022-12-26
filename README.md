@@ -28,6 +28,7 @@ The following steps are to be followed to run this repo:
       <th> Type </th>
       <th> Learning rate</th>
       <th> Epochs </th>
+      <th> Threshold</th>
       <th> Train Performance (%) </th>
       <th> Test Performance (%) </th>
    </tr>
@@ -36,6 +37,7 @@ The following steps are to be followed to run this repo:
       <td> Linear </td>
       <td> 3e-2 </td>
       <td> 10 </td>
+      <td>2.0</td>
       <td> 86 - 85</td>
       <td> 86 - 85</td>
    </tr>
@@ -44,6 +46,7 @@ The following steps are to be followed to run this repo:
       <td> Conv </td>
       <td> - </td>
       <td> 10 </td>
+      <td>2.0</td>
       <td> 10 - 11</td>
       <td> 9 - 11</td>
    </tr>
@@ -52,6 +55,7 @@ The following steps are to be followed to run this repo:
       <td> Linear </td>
       <td> 1e-3 </td>
       <td> 100 </td>
+      <td>2.0</td>
       <td> ~ 82 </td>
       <td> ~ 83 </td>
    </tr>
@@ -60,6 +64,7 @@ The following steps are to be followed to run this repo:
       <td> Linear </td>
       <td> 8e-4 </td>
       <td> 100 </td>
+      <td>2.0</td>
       <td> ~ 79 </td>
       <td> ~ 79 </td>
    </tr>
@@ -68,8 +73,27 @@ The following steps are to be followed to run this repo:
       <td> Linear </td>
       <td> 1.5e-3 </td>
       <td> 100 </td>
+      <td>2.0</td>
       <td> ~ 85 </td>
       <td> ~ 86 </td>
+   </tr>
+
+   <tr>
+      <td> Linear </td>
+      <td> 1.5e-3 </td>
+      <td> 100 </td>
+      <td>4.0</td>
+      <td> ~ 85 </td>
+      <td> ~ 85 </td>
+   </tr>
+
+   <tr>
+      <td> Linear </td>
+      <td> 9e-3 </td>
+      <td> 20 </td>
+      <td>2.0</td>
+      <td> ~ 86 </td>
+      <td> ~ 87 </td>
    </tr>
 </table>
 
@@ -90,7 +114,7 @@ During the implementation of this research idea, a few observations were made:
    1. Regular training with backprop yields ~90% performance within 10 epochs of training.
    2. This implementation yields ~86% within 10 epochs for each layer.
 3. The learning rate is very finicky; very sensitive to change.
-4. To test the network, the data and the metadata must also be merged as in training.
+4. To test the network, the data and the metadata must also be merged just as in training.
    1. This is awesome for self-supervised learning: the data functions both as data and label.
    2. This may not be so good for supervised learning; this training paradigm assumes we have the labels at hand already, which is usually not the case for inference.
 ---

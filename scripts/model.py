@@ -33,7 +33,7 @@ class NetLayer(nn.Module):
 
         self.opt = optim.Adam(
             self.layer.parameters(),
-            lr=self.lr, betas=(0.9, 0.99)
+            lr=self.lr, betas=(0.9, 0.999)
         )
 
     def train_layer(self, pos_data, neg_data):
@@ -96,9 +96,9 @@ class NetLayer(nn.Module):
         return self.layer(x)
 
 
-class Model(nn.Module):
+class FFModel(nn.Module):
     def __init__(self, lr=1e-6, threshold=1., epochs=10, device='cuda', num_classes=2, **kwargs):
-        super(Model, self).__init__()
+        super(FFModel, self).__init__()
 
         self.num_classes = num_classes
         self.device = device
@@ -157,3 +157,39 @@ class Model(nn.Module):
         print(over_all)
 
         return torch.argmax(over_all, dim=-1)
+
+
+class RegularModel(nn.Module):
+    def __init__(self, device='cuda', **kwargs):
+        super(RegularModel, self).__init__()
+
+        self.device = device
+        self.num_layers = len(kwargs)
+
+        self.layers = nn.Sequential().to(self.device)
+        self.fc = nn.Sequential(
+            nn.Linear(20, 10),
+            nn.LogSoftmax(dim=-1)
+        ).to(device)
+
+        for i in range(self.num_layers):
+            self.layers.add_module(
+                name=f'layer_{i}',
+                module=kwargs[f'{i}']['base_layer'](**kwargs[f"{i}"]['kwargs'])
+            )
+            self.layers.add_module(
+                name=f'act_layer_{i}',
+                module=nn.LeakyReLU(negative_slope=.2, inplace=False)
+            )
+
+        self.layers = self.layers.to(self.device)
+
+    def forward(self, data):
+        for layer in self.layers:
+            if layer.__class__.__name__ == 'Linear':
+                data = data.view(data.shape[0], -1)
+            data = layer(data)
+
+        data = self.fc(data)
+
+        return data

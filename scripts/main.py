@@ -10,7 +10,7 @@ from torchvision import transforms as T
 
 from matplotlib import pyplot as plt
 
-from model import Model
+from model import FFModel
 from utils import collate_fn
 from config import get_network_config
 
@@ -43,14 +43,18 @@ def main():
 
     device = torch.device(device)
 
-    kwargs = get_network_config('linear')
+    kwargs = get_network_config('conv')
 
     num_classes = 10
     epochs = 100
-    lr = .0015
+    #lr = .0015
+    max_lr = 2e-1
+    min_lr = 1.5e-1
+    lr = 0.03
+    threshold = 2.
 
-    model = Model(
-        lr=lr, threshold=2,
+    model = FFModel(
+        lr=lr, threshold=threshold,
         **kwargs,
         device=device,
         num_classes=num_classes,
@@ -96,7 +100,7 @@ def main():
 
         pred_labels = model(batch[0].to(device))
 
-        accs.append(100 * pred_labels.eq(batch[1].to(device)).float().mean())
+        accs.append(100 * pred_labels.eq(batch[1].to(device)).float().mean().item())
 
     print(f"\nTest Accuracy (%): {sum(accs) / len(accs) : .4f}\n")
 
