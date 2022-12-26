@@ -43,11 +43,11 @@ def main():
 
     device = torch.device(device)
 
-    kwargs = get_network_config('conv')
+    kwargs = get_network_config('linear')
 
     num_classes = 10
-    epochs = 10
-    lr = 3e-6
+    epochs = 100
+    lr = .0015
 
     model = Model(
         lr=lr, threshold=2,
