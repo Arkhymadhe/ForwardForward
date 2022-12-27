@@ -2,13 +2,10 @@ import shutil
 import os
 
 import torch
-from torch import nn
 
 from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
 from torchvision import transforms as T
-
-from matplotlib import pyplot as plt
 
 from model import FFModel
 from utils import collate_fn
@@ -43,14 +40,14 @@ def main():
 
     device = torch.device(device)
 
-    kwargs = get_network_config('conv')
+    kwargs = get_network_config('Conv')
 
     num_classes = 10
-    epochs = 100
     #lr = .0015
     max_lr = 2e-1
     min_lr = 1.5e-1
-    lr = 0.03
+    lr = 3e-5
+    epochs = 100
     threshold = 2.
 
     model = FFModel(

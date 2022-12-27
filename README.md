@@ -26,9 +26,9 @@ The following steps are to be followed to run this repo:
 <table style="text-align:center">
    <tr>
       <th> Type </th>
-      <th> Learning rate</th>
+      <th> Learning rate </th>
       <th> Epochs </th>
-      <th> Threshold</th>
+      <th> Threshold </th>
       <th> Train Performance (%) </th>
       <th> Test Performance (%) </th>
    </tr>
@@ -37,7 +37,7 @@ The following steps are to be followed to run this repo:
       <td> Linear </td>
       <td> 3e-2 </td>
       <td> 10 </td>
-      <td>2.0</td>
+      <td> 2.0 </td>
       <td> 86 - 85</td>
       <td> 86 - 85</td>
    </tr>
@@ -46,16 +46,34 @@ The following steps are to be followed to run this repo:
       <td> Conv </td>
       <td> - </td>
       <td> 10 </td>
-      <td>2.0</td>
+      <td> 2.0 </td>
       <td> 10 - 11</td>
       <td> 9 - 11</td>
+   </tr>
+
+   <tr>
+      <td> Conv </td>
+      <td> 3e-5 </td>
+      <td> 10 </td>
+      <td> 2.0 </td>
+      <td> ~ 49 </td>
+      <td> ~ 49 </td>
+   </tr>
+
+   <tr>
+      <td> Conv </td>
+      <td> 3e-5 </td>
+      <td> 100 </td>
+      <td> 2.0 </td>
+      <td> ~ 63 </td>
+      <td> ~ 63 </td>
    </tr>
    
    <tr>
       <td> Linear </td>
       <td> 1e-3 </td>
       <td> 100 </td>
-      <td>2.0</td>
+      <td> 2.0 </td>
       <td> ~ 82 </td>
       <td> ~ 83 </td>
    </tr>
@@ -64,7 +82,7 @@ The following steps are to be followed to run this repo:
       <td> Linear </td>
       <td> 8e-4 </td>
       <td> 100 </td>
-      <td>2.0</td>
+      <td> 2.0 </td>
       <td> ~ 79 </td>
       <td> ~ 79 </td>
    </tr>
@@ -73,7 +91,7 @@ The following steps are to be followed to run this repo:
       <td> Linear </td>
       <td> 1.5e-3 </td>
       <td> 100 </td>
-      <td>2.0</td>
+      <td> 2.0 </td>
       <td> ~ 85 </td>
       <td> ~ 86 </td>
    </tr>
@@ -82,7 +100,7 @@ The following steps are to be followed to run this repo:
       <td> Linear </td>
       <td> 1.5e-3 </td>
       <td> 100 </td>
-      <td>4.0</td>
+      <td> 4.0 </td>
       <td> ~ 85 </td>
       <td> ~ 85 </td>
    </tr>
@@ -91,7 +109,7 @@ The following steps are to be followed to run this repo:
       <td> Linear </td>
       <td> 9e-3 </td>
       <td> 20 </td>
-      <td>2.0</td>
+      <td> 2.0 </td>
       <td> ~ 86 </td>
       <td> ~ 87 </td>
    </tr>

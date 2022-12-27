@@ -17,13 +17,11 @@ def new_loss(p, n):
 class NetLayer(nn.Module):
     def __init__(self, base_layer, lr, threshold, epochs, device, **kwargs):
         super(NetLayer, self).__init__()
-        #self.layer = base_layer(**kwargs)
 
         self.device = device
         self.epochs = epochs
         self.lr = lr
         self.threshold = threshold
-        #self.act_layer = nn.LeakyReLU(negative_slope=.2, inplace=True)
 
         self.layer = nn.Sequential(
             base_layer(**kwargs),
@@ -154,7 +152,7 @@ class FFModel(nn.Module):
 
         over_all /= over_all_sum
 
-        print(over_all)
+        #print(over_all)
 
         return torch.argmax(over_all, dim=-1)
 
