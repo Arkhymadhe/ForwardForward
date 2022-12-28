@@ -135,6 +135,7 @@ During the implementation of this research idea, a few observations were made:
 4. To test the network, the data and the metadata must also be merged just as in training.
    1. This is awesome for self-supervised learning: the data functions both as data and label.
    2. This may not be so good for supervised learning; this training paradigm assumes we have the labels at hand already, which is usually not the case for inference.
+5. Performance is a lot better, but still a bit far from SOTA. More work needed.
 ---
 
 
