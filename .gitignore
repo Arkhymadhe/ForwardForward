@@ -3,3 +3,4 @@
 scripts/*__/*.pyc
 scripts/newMain.py
 scripts/reg.py
+scripts/newModel.py

@@ -40,14 +40,14 @@ def main():
 
     device = torch.device(device)
 
-    kwargs = get_network_config('Conv')
+    kwargs = get_network_config('Linear')
 
     num_classes = 10
-    #lr = .0015
+    lr = .0015
     max_lr = 2e-1
     min_lr = 1.5e-1
-    lr = 3e-5
-    epochs = 100
+    #lr = 3e-2
+    epochs = 20
     threshold = 2.
 
     model = FFModel(

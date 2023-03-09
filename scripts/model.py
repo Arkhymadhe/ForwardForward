@@ -10,6 +10,13 @@ def loss(data, labels):
     return (data - labels).mean()
 
 
+def logistic_loss(act, threshold):
+    loss_ = torch.pow(act, 2) - threshold
+
+    loss_ = torch.sigmoid(loss_.view(loss_.shape[0], -1).mean(dim=1) + 1e-5)
+    loss_ = torch.log(loss_)
+    return loss_.mean()
+
 def new_loss(p, n):
     return (p - n).mean()
 
@@ -25,7 +32,7 @@ class NetLayer(nn.Module):
 
         self.layer = nn.Sequential(
             base_layer(**kwargs),
-            nn.LeakyReLU(negative_slope=.2, inplace=False)
+            nn.LeakyReLU(negative_slope=.2, inplace=True)
         )
         self.layer = self.layer.to(self.device)
 
@@ -43,22 +50,21 @@ class NetLayer(nn.Module):
             h_pos, h_neg = h_pos.view(h_pos.shape[0], -1), h_neg.view(h_neg.shape[0], -1)
 
         for e in range(1, self.epochs + 1):
-            self.opt.zero_grad()
 
             pos_act = self.forward(h_pos).pow(2).mean(1)
-            # pos_loss = -self.calc_loss(pos_act)
-            # pos_loss.backward()
+            pos_loss = -self.calc_loss(pos_act)
+            pos_loss.backward()
 
             neg_act = self.forward(h_neg).pow(2).mean(1)
-            # neg_loss = self.calc_loss(neg_act)
-            # neg_loss.backward()
+            neg_loss = self.calc_loss(neg_act)
+            neg_loss.backward()
 
             # loss = -new_loss(pos_act, neg_act)
-            loss = torch.log(1 + torch.exp(torch.cat([
-                -pos_act + self.threshold,
-                neg_act - self.threshold]))).mean()
+            #loss = torch.log(1 + torch.exp(torch.cat([
+             #   -pos_act + self.threshold,
+              #  neg_act - self.threshold]))).mean()
 
-            loss.backward()
+            #loss.backward()
 
             self.opt.step()
 
@@ -78,14 +84,15 @@ class NetLayer(nn.Module):
         h_neg = neg_data
 
         for e in range(self.epochs):
-            _, _ = self.train_layer(h_pos, h_neg)
+            h_pos_, h_neg_ = self.train_layer(h_pos, h_neg)
 
-        return self.train_layer(h_pos, h_neg)
+        #return self.forward(h_pos, h_neg)
+        return h_pos_, h_neg_
 
     def calc_loss(self, data):
-        labels = data.clone()
-        labels.fill_(self.threshold)
-        return loss(data, labels)
+        #labels = data.clone()
+        #labels.fill_(self.threshold)
+        return logistic_loss(data, self.threshold)
 
     def forward(self, x):
         x = x / (x.norm(2, 1, keepdim=True) + 1e-4)
