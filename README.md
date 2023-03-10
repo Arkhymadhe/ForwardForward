@@ -1,6 +1,14 @@
 ---
 ## Foward-Forward Algorithm
 
+---
+
+**NOTE**:
+
+This is the `test` branch. All changes made here are tested before being pushed to the `main` branch.
+
+---
+
 This algorithm is designed by Geoffrey Hinton and presented at NeurIPS 2022 as a possible alternative to the all-popular backpropagation algorithm that powers most of present-day ML.
 
 Note that the difference between this algorithm and regular backprop is not the prescence of gradients or lack thereof; it is the scale and purpose at which and for which the gradients are calculated.
@@ -113,6 +121,25 @@ The following steps are to be followed to run this repo:
       <td> ~ 86 </td>
       <td> ~ 87 </td>
    </tr>
+
+   <tr>
+      <td> Linear </td>
+      <td> 3e-3 </td>
+      <td> 100 </td>
+      <td> 2.0 </td>
+      <td> ~ 83 </td>
+      <td> ~ 83 </td>
+   </tr>
+
+   <tr>
+      <td> Linear </td>
+      <td> 9e-3 </td>
+      <td> 20 </td>
+      <td> 2.5 </td>
+      <td> ~ 87 </td>
+      <td> ~ 88 </td>
+   </tr>
+
 </table>
 
 ---

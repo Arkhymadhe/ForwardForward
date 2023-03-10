@@ -13,6 +13,9 @@ from config import get_network_config
 
 
 def main():
+
+    torch.cuda.manual_seed(2023)
+
     batch_size = 128*2
 
     print("Get train data...")
@@ -43,12 +46,12 @@ def main():
     kwargs = get_network_config('Linear')
 
     num_classes = 10
-    lr = .0015
+    lr = 9e-3
     max_lr = 2e-1
     min_lr = 1.5e-1
     #lr = 3e-2
     epochs = 20
-    threshold = 2.
+    threshold = 2.5
 
     model = FFModel(
         lr=lr, threshold=threshold,

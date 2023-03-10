@@ -30,12 +30,18 @@ class NetLayer(nn.Module):
         self.lr = lr
         self.threshold = threshold
 
+        # Instantiate layer
         self.layer = nn.Sequential(
             base_layer(**kwargs),
             nn.LeakyReLU(negative_slope=.2, inplace=True)
         )
         self.layer = self.layer.to(self.device)
 
+        # Initialize layer weights
+        for param in self.parameters():
+            nn.init.normal_(param, mean=0.01, std=0.5)
+
+        # Instantiate optimizer
         self.opt = optim.Adam(
             self.layer.parameters(),
             lr=self.lr, betas=(0.9, 0.999)
@@ -46,25 +52,26 @@ class NetLayer(nn.Module):
         h_pos = pos_data
         h_neg = neg_data
 
+        # Fit data shape to layer type if needed
         if self.layer[0].__class__.__name__ == 'Linear':
             h_pos, h_neg = h_pos.view(h_pos.shape[0], -1), h_neg.view(h_neg.shape[0], -1)
 
         for e in range(1, self.epochs + 1):
 
             pos_act = self.forward(h_pos).pow(2).mean(1)
-            pos_loss = -self.calc_loss(pos_act)
-            pos_loss.backward()
+            #pos_loss = -self.calc_loss(pos_act)
+            #pos_loss.backward()
 
             neg_act = self.forward(h_neg).pow(2).mean(1)
-            neg_loss = self.calc_loss(neg_act)
-            neg_loss.backward()
+            #neg_loss = self.calc_loss(neg_act)
+            #neg_loss.backward()
 
             # loss = -new_loss(pos_act, neg_act)
-            #loss = torch.log(1 + torch.exp(torch.cat([
-             #   -pos_act + self.threshold,
-              #  neg_act - self.threshold]))).mean()
+            loss = torch.log(1 + torch.exp(torch.cat([
+                -pos_act + self.threshold,
+                neg_act - self.threshold]))).mean()
 
-            #loss.backward()
+            loss.backward()
 
             self.opt.step()
 
