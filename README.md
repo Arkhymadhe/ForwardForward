@@ -34,7 +34,8 @@ The following steps are to be followed to run this repo:
 <table style="text-align:center">
    <tr>
       <th> Type </th>
-      <th> Learning rate </th>
+      <th> Batch Size </th>
+      <th> Learning Rate </th>
       <th> Epochs </th>
       <th> Threshold </th>
       <th> Train Performance (%) </th>
@@ -44,6 +45,7 @@ The following steps are to be followed to run this repo:
    <tr>
       <td> Linear </td>
       <td> 3e-2 </td>
+      <td> 256 </td>
       <td> 10 </td>
       <td> 2.0 </td>
       <td> 86 - 85</td>
@@ -53,6 +55,7 @@ The following steps are to be followed to run this repo:
    <tr>
       <td> Conv </td>
       <td> - </td>
+      <td> 256 </td>
       <td> 10 </td>
       <td> 2.0 </td>
       <td> 10 - 11</td>
@@ -62,6 +65,7 @@ The following steps are to be followed to run this repo:
    <tr>
       <td> Conv </td>
       <td> 3e-5 </td>
+      <td> 256 </td>
       <td> 10 </td>
       <td> 2.0 </td>
       <td> ~ 49 </td>
@@ -71,6 +75,7 @@ The following steps are to be followed to run this repo:
    <tr>
       <td> Conv </td>
       <td> 3e-5 </td>
+      <td> 256 </td>
       <td> 100 </td>
       <td> 2.0 </td>
       <td> ~ 63 </td>
@@ -80,6 +85,7 @@ The following steps are to be followed to run this repo:
    <tr>
       <td> Linear </td>
       <td> 1e-3 </td>
+      <td> 256 </td>
       <td> 100 </td>
       <td> 2.0 </td>
       <td> ~ 82 </td>
@@ -89,6 +95,7 @@ The following steps are to be followed to run this repo:
    <tr>
       <td> Linear </td>
       <td> 8e-4 </td>
+      <td> 256 </td>
       <td> 100 </td>
       <td> 2.0 </td>
       <td> ~ 79 </td>
@@ -98,6 +105,7 @@ The following steps are to be followed to run this repo:
    <tr>
       <td> Linear </td>
       <td> 1.5e-3 </td>
+      <td> 256 </td>
       <td> 100 </td>
       <td> 2.0 </td>
       <td> ~ 85 </td>
@@ -107,6 +115,7 @@ The following steps are to be followed to run this repo:
    <tr>
       <td> Linear </td>
       <td> 1.5e-3 </td>
+      <td> 256 </td>
       <td> 100 </td>
       <td> 4.0 </td>
       <td> ~ 85 </td>
@@ -115,16 +124,8 @@ The following steps are to be followed to run this repo:
 
    <tr>
       <td> Linear </td>
-      <td> 9e-3 </td>
-      <td> 20 </td>
-      <td> 2.0 </td>
-      <td> ~ 86 </td>
-      <td> ~ 87 </td>
-   </tr>
-
-   <tr>
-      <td> Linear </td>
       <td> 3e-3 </td>
+      <td> 256 </td>
       <td> 100 </td>
       <td> 2.0 </td>
       <td> ~ 83 </td>
@@ -134,10 +135,51 @@ The following steps are to be followed to run this repo:
    <tr>
       <td> Linear </td>
       <td> 9e-3 </td>
+      <td> 256 </td>
+      <td> 20 </td>
+      <td> 2.0 </td>
+      <td> ~ 86 </td>
+      <td> ~ 87 </td>
+   </tr>
+
+   <tr>
+      <td> Linear </td>
+      <td> 9e-3 </td>
+      <td> 256 </td>
       <td> 20 </td>
       <td> 2.5 </td>
       <td> ~ 87 </td>
       <td> ~ 88 </td>
+   </tr>
+
+   <tr>
+      <td> Linear </td>
+      <td> 9e-3 </td>
+      <td> 256 </td>
+      <td> 30 </td>
+      <td> 6.0 </td>
+      <td> ~ 88 </td>
+      <td> ~ 89 </td>
+   </tr>
+
+   <tr>
+      <td> Linear </td>
+      <td> 9e-3 </td>
+      <td> 256 </td>
+      <td> 25 </td>
+      <td> 6.0 </td>
+      <td> ~ 87 </td>
+      <td> ~ 88 </td>
+   </tr>
+
+   <tr>
+      <td> Linear </td>
+      <td> 9e-3 </td>
+      <td> 128 </td>
+      <td> 40 </td>
+      <td> 6.0 </td>
+      <td> ~ 90 </td>
+      <td> ~ 90 </td>
    </tr>
 
 </table>

@@ -13,8 +13,9 @@ def loss(data, labels):
 def logistic_loss(act, threshold):
     loss_ = torch.pow(act, 2) - threshold
 
-    loss_ = torch.sigmoid(loss_.view(loss_.shape[0], -1).mean(dim=1) + 1e-5)
+    loss_ = torch.sigmoid(loss_.view(loss_.shape[0], -1).mean(dim=1) + 1e-4)
     loss_ = torch.log(loss_)
+
     return loss_.mean()
 
 def new_loss(p, n):
@@ -22,7 +23,7 @@ def new_loss(p, n):
 
 
 class NetLayer(nn.Module):
-    def __init__(self, base_layer, lr, threshold, epochs, device, **kwargs):
+    def __init__(self, base_layer, lr, threshold, epochs, device, non_linearity=True, **kwargs):
         super(NetLayer, self).__init__()
 
         self.device = device
@@ -30,11 +31,20 @@ class NetLayer(nn.Module):
         self.lr = lr
         self.threshold = threshold
 
+        layers = [
+            base_layer(**kwargs),
+        ]
+
+        if non_linearity:
+            layers.append(
+                nn.LeakyReLU(negative_slope=.1, inplace=True)
+            )
+
         # Instantiate layer
         self.layer = nn.Sequential(
-            base_layer(**kwargs),
-            nn.LeakyReLU(negative_slope=.2, inplace=True)
+            *layers
         )
+
         self.layer = self.layer.to(self.device)
 
         # Initialize layer weights
@@ -43,7 +53,7 @@ class NetLayer(nn.Module):
 
         # Instantiate optimizer
         self.opt = optim.Adam(
-            self.layer.parameters(),
+            self.parameters(),
             lr=self.lr, betas=(0.9, 0.999)
         )
 
@@ -71,11 +81,11 @@ class NetLayer(nn.Module):
                 -pos_act + self.threshold,
                 neg_act - self.threshold]))).mean()
 
+            self.opt.zero_grad()
+
             loss.backward()
 
             self.opt.step()
-
-            self.opt.zero_grad()
 
         return self.forward(h_pos).detach(), self.forward(h_neg).detach()
 
@@ -121,7 +131,11 @@ class FFModel(nn.Module):
 
         self.layers = nn.Sequential().to(self.device)
 
+        non_linearity = True
         for i in range(self.num_layers):
+            if i == self.num_layers-1:
+                non_linearity = False
+
             self.layers.add_module(
                 name=f'layer_{i}',
                 module=NetLayer(
@@ -129,12 +143,13 @@ class FFModel(nn.Module):
                     self.lr,
                     self.threshold,
                     self.epochs,
+                    non_linearity=non_linearity,
                     **kwargs[f"{i}"]['kwargs'],
                     device=self.device
                 )
             )
 
-        #self.layers = self.layers.to(self.device)
+        # self.layers = self.layers.to(self.device)
 
     def train_model(self, pos_data, neg_data):
 
@@ -163,6 +178,7 @@ class FFModel(nn.Module):
 
         over_all = torch.cat(overall_fit_metric, dim=1)
         over_all_sum = torch.sum(over_all, dim=-1, keepdim=True)
+        over_all_sum = torch.concatenate([over_all_sum for n in range(self.num_classes)], dim=-1)
 
         over_all /= over_all_sum
 

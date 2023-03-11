@@ -8,13 +8,13 @@ def get_network_config(type='linear'):
                 'base_layer': nn.Linear,
                 'kwargs': {
                     'in_features': 28 * 28,
-                    'out_features': 8 * 24 * 24,
+                    'out_features': 24 * 24,
                 }
             },
             '1': {
                 'base_layer': nn.Linear,
                 'kwargs': {
-                    'in_features': 8 * 24 * 24,
+                    'in_features': 24 * 24,
                     'out_features': 300,
                 }
             },
@@ -39,7 +39,7 @@ def get_network_config(type='linear'):
                 'base_layer': nn.Conv2d,
                 'kwargs': {
                     'in_channels': 1,
-                    'out_channels': 3,
+                    'out_channels': 16,
                     'kernel_size': 3,
                     'bias': True
                 }
@@ -47,8 +47,8 @@ def get_network_config(type='linear'):
             '1': {
                 'base_layer': nn.Conv2d,
                 'kwargs': {
-                    'in_channels': 3,
-                    'out_channels': 8,
+                    'in_channels': 16,
+                    'out_channels': 32,
                     'kernel_size': 3,
                     'bias': True
                 }
@@ -56,7 +56,7 @@ def get_network_config(type='linear'):
             '2': {
                 'base_layer': nn.Linear,
                 'kwargs': {
-                    'in_features': 8 * 24 * 24,
+                    'in_features': 32 * 24 * 24,
                     'out_features': 300,
                 }
             },
